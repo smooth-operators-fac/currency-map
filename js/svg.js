@@ -3,11 +3,13 @@ function changeColour(country, data){
 }
 
 function getCountries(){
-	return [].slice.call(document.getElementsByClassName('country-data')[0].childNodes).map(function(node){
-		if (node.nodeType === 1){
-			return node.getAttribute('countryid')
-		}
-	})
+	return [].slice.call(document.getElementsByClassName('country-data')[0].childNodes)
+		.filter(function(node){
+			return node.nodeType === 1;
+		})
+		.map(function(node){
+				return node.getAttribute('countryid')
+		})
 }
 
 
