@@ -1,6 +1,5 @@
-var cachedResponse = {
-  "disclaimer": "Exchange rates provided for informational purposes only and do not constitute financial advice of any kind. Although every attempt is made to ensure quality, no guarantees are made of accuracy, validity, availability, or fitness for any purpose. All usage subject to acceptance of Terms: https://openexchangerates.org/terms/",
-  "license": "Data sourced from various providers; resale prohibited; no warranties given of any kind. All usage subject to License Agreement: https://openexchangerates.org/license/",
+var cachedResponse = JSON.parse( 
+	String(
   "timestamp": 1466593223,
   "base": "USD",
   "rates": {
@@ -175,7 +174,6 @@ var cachedResponse = {
     "ZMK": 5252.024745,
     "ZMW": 11.004038,
     "ZWL": 322.322775
-  }
-}
+  }))
 
-console.log(JSON.parse(cachedResponse))
+console.log(cachedResponse)

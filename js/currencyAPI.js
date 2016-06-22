@@ -21,7 +21,6 @@ var currencyOBJ = {
 
 		xhr.open(this.reqType,this.url,true);
 		xhr.send()
-	},
-	selectBase:
+	}
 
 }
