@@ -2,4 +2,8 @@
 *.swo
 *.swp
 *.un~
+<<<<<<< HEAD
 .yo-rc.json
+=======
+*.DS_Store
+>>>>>>> master
