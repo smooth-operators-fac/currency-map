@@ -1,23 +1,32 @@
 function getScores(currency){
 		//matthia's function
-		return placeholderObj
+		return placeholderObj;
 }
 
+/* Function is passed the scores object. It calculates the max, min and the
+range of scores then normalises them to range across the length of
+colours array. An object pairing currency and the colours is returned */
 function getColours(scores){
+	//get max, min and range
 	var min = Infinity, max = -Infinity;
-	Object.keys(scores).forEach(function(key) {
-		if(scores[key] < min) min = scores[key];
-		if(scores[key] > max) max = scores[key];
+	Object.keys(scores).forEach(function(currency) {
+		if(scores[currency] < min) min = scores[currency];
+		if(scores[currency] > max) max = scores[currency];
 	});
 	var range = max - min;
+	//build colours object
 	var colourObj = {};
-	Object.keys(scores).forEach(function(el){
-			var normalised = Math.floor(((scores[el] - min)/range)*colours.length);
-			colourObj[el] = colours[normalised];
+	Object.keys(scores).forEach(function(currency){
+			var normalised = Math.floor(((scores[currency] - min)/range)*colours.length);
+			//normalised is an integer from 0 to the length of colours array corresponding to the score
+			colourObj[currency] = colours[normalised];
 	});
 	return colourObj;
 }
 
+/* onClick event handler. Retrieves scores for the clicked country's currency,
+retrieves colour object from getColours, and updates the fill attribute of
+all the other countries */
 function changeColour(e){
 	var countryNode = e.target;
 	var baseCountry = countryNode.getAttribute('countryid');
@@ -26,15 +35,19 @@ function changeColour(e){
 	var colourObj = getColours(scores);
 	[].slice.call(document.getElementsByClassName('country-data')[0].childNodes)
 	.filter(function(node){
+		//filters out whitespace text nodes injected by Chrome
 		return node.nodeType === 1;
 	})
 	.forEach(function(node){
 		var country = node.getAttribute('countryid');
 		var currency = currencyObj[country];
 		node.setAttribute('fill', colourObj[currency]);
+		//if there is no data on a country's currency, fill defaults to black
 	});
+	countryNode.setAttribute('fill', 'white');
 }
 
+/* This function has been superceded */
 function getCountries(){
 	return [].slice.call(document.getElementsByClassName('country-data')[0].childNodes)
 		.filter(function(node){
@@ -45,6 +58,7 @@ function getCountries(){
 		});
 }
 
+/* Attaches a click event listener to every country */
 function addEventListeners(){
 	 	var nodeList = document.getElementsByClassName('country-data')[0].childNodes;
 	 	[].forEach.call(nodeList,function(node){
@@ -52,9 +66,12 @@ function addEventListeners(){
 		});
 };
 
+//attach the event listeners
 addEventListeners();
 
 
+
+/*--------------- static data -------------*/
 
 var placeholderObj = {
     "AED": 3.672934,
@@ -62,8 +79,8 @@ var placeholderObj = {
     "ALL": 2.9261,
     "AMD": 7.372501,
     "ANG": 1.788725,
-    "AOA": 16.879832,
-    "ARS": 13.94208,
+    "AOA": 1.879832,
+    "ARS": 1.94208,
     "AUD": 1.33372,
     "AWG": 1.793333,
     "AZN": 1.530325,
