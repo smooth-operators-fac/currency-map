@@ -29,22 +29,31 @@ retrieves colour object from getColours, and updates the fill attribute of
 all the other countries */
 function changeColour(e){
 	var countryNode = e.target;
-	var baseCountry = countryNode.getAttribute('countryid');
-	var currency = currencyObj[baseCountry];
-	var scores = getScores(currency);
-	var colourObj = getColours(scores);
+	var unclicking = countryNode.getAttribute('fill') === 'white'
+	if (!unclicking) {
+		var baseCountry = countryNode.getAttribute('countryid');
+		var currency = currencyObj[baseCountry];
+		var scores = getScores(currency);
+		var colourObj = getColours(scores);
+	}
 	[].slice.call(document.getElementsByClassName('country-data')[0].childNodes)
 	.filter(function(node){
 		//filters out whitespace text nodes injected by Chrome
 		return node.nodeType === 1;
 	})
 	.forEach(function(node){
-		var country = node.getAttribute('countryid');
-		var currency = currencyObj[country];
-		node.setAttribute('fill', colourObj[currency]);
-		//if there is no data on a country's currency, fill defaults to black
+		if (!unclicking) {
+			var country = node.getAttribute('countryid');
+			var currency = currencyObj[country];
+			node.setAttribute('fill', colourObj[currency]);
+			//if there is no data on a country's currency, fill defaults to black
+		} else {
+			node.setAttribute('fill', '#818181')
+		}
 	});
-	countryNode.setAttribute('fill', 'white');
+	if (!unclicking) {
+		countryNode.setAttribute('fill', 'white');
+	}
 }
 
 /* This function has been superceded */
