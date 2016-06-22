@@ -1,4 +1,5 @@
 *.so
 *.swo
+*.swp
 *.un~
 .yo-rc.json
