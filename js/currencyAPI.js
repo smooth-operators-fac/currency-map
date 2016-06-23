@@ -9,7 +9,7 @@ var currencyOBJ = {
 	init: function(){
 		this.interval = setInterval(this.watch.bind(currencyOBJ),10)
 		var now = new Date()
-		var dates = [5,11,18,25,32].map(el=>{
+		var dates = [1,365,700,1000,1300].map(el=>{
 			return now.subDays(el).format()
 		})
 		this.callList = dates.map((el)=>{
@@ -43,9 +43,6 @@ var currencyOBJ = {
 		if(this.response.length === 4 && this.todayResponse.length === 1){
 			this.computeAverage()
 			this.computeScores()
-			console.log(this.scores)
-			console.log(this.getScores('USD'))
-			console.log(this.getScores('AFN'))
 			clearInterval(this.interval)
 		}
 	},
@@ -54,27 +51,29 @@ var currencyOBJ = {
 			acc[current] = (this.response[0][current]+  this.response[1][current] +  this.response[2][current] +  this.response[3][current])/this.response.length
 			return acc
 		},{})
-	console.log(this.average)
-
 	},
 	computeScores: function(){
 		this.scores = Object.keys(this.average).reduce((acc,current)=>{
-			acc[current] =  this.todayResponse[0][current] - this.average[current]
+			acc[current] =  (this.todayResponse[0][current] - this.average[current])/this.average[current]
 			return acc
 		},{})
 	},
 	rebase: function(base){
 		var baseVal = this.scores[base];
-		console.log(baseVal)
 		return Object.keys(this.scores).reduce((acc,current)=>{
-			acc[current] = this.scores[current]/baseVal
-			return acc
-		},{})
-	},
+				acc[current] = this.scores[current]/baseVal
+				return acc
+			},{})
+		},
 	getScores: function(base){
-		if(base === 'USD')return this.scores;
-		else return this.rebase(base)
-
+		if(base === 'USD'){
+			console.log('base: ', base, ' | ', Object.keys(this.scores).length)
+			return this.scores;
+		} else {
+			var out = this.rebase(base)
+			console.log('base: ', base, ' | ', Object.keys(out).length)
+			return out
+		}
 	}
 }
 
