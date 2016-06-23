@@ -17,7 +17,7 @@ function getColours(scores){
 	//build colours object
 	var colourObj = {};
 	Object.keys(scores).forEach(function(currency){
-			var normalised = Math.floor(((scores[currency] - min)/range)*colours.length);
+			var normalised = Math.floor(((scores[currency] - min)/range)*(colours.length-1));
 			//normalised is an integer from 0 to the length of colours array corresponding to the score
 			colourObj[currency] = colours[normalised];
 	});
@@ -36,11 +36,7 @@ function changeColour(e){
 		var scores = getScores(currency);
 		var colourObj = getColours(scores);
 	}
-	[].slice.call(document.getElementsByClassName('country-data')[0].childNodes)
-	.filter(function(node){
-		//filters out whitespace text nodes injected by Chrome
-		return node.nodeType === 1;
-	})
+	[].slice.call(document.getElementsByClassName('country'))
 	.forEach(function(node){
 		if (!unclicking) {
 			var country = node.getAttribute('countryid');
@@ -58,10 +54,7 @@ function changeColour(e){
 
 /* This function has been superceded */
 function getCountries(){
-	return [].slice.call(document.getElementsByClassName('country-data')[0].childNodes)
-		.filter(function(node){
-			return node.nodeType === 1;
-		})
+	return [].slice.call(document.getElementsByClassName('country'))
 		.map(function(node){
 				return node.getAttribute('countryid')
 		});
@@ -69,7 +62,7 @@ function getCountries(){
 
 /* Attaches a click event listener to every country */
 function addEventListeners(){
-	 	var nodeList = document.getElementsByClassName('country-data')[0].childNodes;
+	 	var nodeList = document.getElementsByClassName('country');
 	 	[].forEach.call(nodeList,function(node){
 			node.addEventListener('click',changeColour,false)
 		});
