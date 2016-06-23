@@ -10,22 +10,22 @@ var currencyOBJ = {
 		this.interval = setInterval(this.watch.bind(currencyOBJ),10)
 		var now = new Date()
 		var dates = [5,11,18,25,32].map(el=>{
-			return now.subDays(el).format()	
+			return now.subDays(el).format()
 		})
 		this.callList = dates.map((el)=>{
-			return new Call(this.urls(el))	
+			return new Call(this.urls(el))
 		})
 		var xhrArray = [0,1,2,3,4].map((el) => 'xhr' + el)
 
 		this.callList.forEach((el,i)=>{
-			xhrArray[i] = new XMLHttpRequest()	
+			xhrArray[i] = new XMLHttpRequest()
 			xhrArray[i].onload = ()=>{
 				var clean  = new Object(JSON.parse(xhrArray[i].response).rates)
 				if (i>0) this.response.push(clean)
 				else this.todayResponse.push(clean)
 			}
-			xhrArray[i].open('GET',this.callList[i].url,true)	
-			xhrArray[i].send()	
+			xhrArray[i].open('GET',this.callList[i].url,true)
+			xhrArray[i].send()
 		})
 	},
 	urls: function(date){
@@ -37,7 +37,7 @@ var currencyOBJ = {
 	reset: function(){
 		this.reqType = '';
 		this.url = '';
-		this.dates = [];		
+		this.dates = [];
 	},
 	watch: function(){
 		if(this.response.length === 4 && this.todayResponse.length === 1){
@@ -47,7 +47,7 @@ var currencyOBJ = {
 			console.log(this.getScores('USD'))
 			console.log(this.getScores('AFN'))
 			clearInterval(this.interval)
-		}	
+		}
 	},
 	computeAverage: function(){
 		this.average  = Object.keys(this.response[0]).reduce((acc,current)=>{
@@ -61,20 +61,20 @@ var currencyOBJ = {
 		this.scores = Object.keys(this.average).reduce((acc,current)=>{
 			acc[current] =  this.todayResponse[0][current] - this.average[current]
 			return acc
-		},{}) 			
+		},{})
 	},
 	rebase: function(base){
 		var baseVal = this.scores[base];
 		console.log(baseVal)
 		return Object.keys(this.scores).reduce((acc,current)=>{
-			acc[current] = this.scores[current]/baseVal	
-			return acc	
-		},{})		
+			acc[current] = this.scores[current]/baseVal
+			return acc
+		},{})
 	},
 	getScores: function(base){
-		if(base === 'USD')return this.scores;	
+		if(base === 'USD')return this.scores;
 		else return this.rebase(base)
-	
+
 	}
 }
 
@@ -92,3 +92,5 @@ Date.prototype.format = function(){
 	var addZ =  (n)=>{return n<10? '0'+n:''+n;}
 	return this.getFullYear() + '-'+ addZ(this.getMonth()+1)+ '-' + addZ(this.getDate())
 }
+
+currencyOBJ.init();
