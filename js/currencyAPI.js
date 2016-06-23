@@ -59,19 +59,37 @@ var currencyOBJ = {
 		},{})
 	},
 	rebase: function(base){
-		var baseVal = this.scores[base];
-		return Object.keys(this.scores).reduce((acc,current)=>{
-				acc[current] = this.scores[current]/baseVal
-				return acc
-			},{})
-		},
+		var newResponse = [];
+		this.response.forEach(function(obj, i){
+			var newObj = {}
+			Object.keys(obj).forEach(function(currency){
+				newObj[currency] = obj[currency]/obj[base]
+			})
+			newResponse.push(newObj)
+		})
+
+		var tempObj = {}
+		Object.keys(this.todayResponse[0]).forEach((currency) => {
+				tempObj[currency] = this.todayResponse[0][currency]/this.todayResponse[0][base]
+		})
+		var newTodayResponse = [tempObj]
+		var tempTodayResponse = this.todayResponse
+		this.todayResponse = newTodayResponse
+		var tempResponse = this.response
+		this.response = newResponse
+		this.computeAverage();
+		this.computeScores();
+		this.response = tempResponse
+		this.todayResponse = tempTodayResponse
+		return this.scores;
+	},
 	getScores: function(base){
 		if(base === 'USD'){
-			console.log('base: ', base, ' | ', Object.keys(this.scores).length)
+			console.log('base: ', base, ' | ', this.scores)
 			return this.scores;
 		} else {
 			var out = this.rebase(base)
-			console.log('base: ', base, ' | ', Object.keys(out).length)
+			console.log('base: ', base, ' | ', out)
 			return out
 		}
 	}
