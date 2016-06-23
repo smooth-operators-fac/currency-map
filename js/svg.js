@@ -17,7 +17,7 @@ function getColours(scores){
 	//build colours object
 	var colourObj = {};
 	Object.keys(scores).forEach(function(currency){
-			var normalised = Math.floor(((scores[currency] - min)/range)*colours.length);
+			var normalised = Math.floor(((scores[currency] - min)/range)*(colours.length-1));
 			//normalised is an integer from 0 to the length of colours array corresponding to the score
 			colourObj[currency] = colours[normalised];
 	});

@@ -11,10 +11,16 @@ describe('Sam and Jakub want', function(){
     expect(expected).toBe(actual);
   })
 
-  it('getCountries() to return the array of countries', function(){
-    var actual = getCountries()[2];
-    var expected = 'AL';
-    expect(expected).toBe(actual);
+  it('getColours() returns a correct colour object for a set of scores', function(){
+    var scores = {
+      EUR: 2,
+      GBP: 5,
+      USD: 6
+    };
+
+    var actual = getColours(scores);
+    var expected = {EUR: '#FF0000', GBP: '#90FF00', USD: '#10FF00'};
+    expect(expected).toEqual(actual);
   })
 
   it('clicking the same country twice to deselect it')
