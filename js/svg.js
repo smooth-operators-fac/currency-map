@@ -25,12 +25,13 @@ var selectBox = {
 		}
 		this.box.setAttribute('x', this.start.x);
 		this.box.setAttribute('y', this.start.y);
-		this.svg.addEventListener('mousemove', (e) => {
-			this.mousemoveCallback = arguments.callee;
+		this.mousemoveCallback = (function(e){
 			return this.enlargeBox(e);
-		})
+		}).bind(this);
+		this.svg.addEventListener('mousemove', this.mousemoveCallback);
 	},
-	enlargeBox:	function(e, callee){
+	enlargeBox:	function(e){
+		console.log('moving')
 			var newPt = this.getPoint.bind(selectBox)(e)
 			var y = newPt.y
 			var x = newPt.x
@@ -54,9 +55,10 @@ var selectBox = {
 			this.box.setAttribute('height', height);
 	},
 	removeBox: function (e){
+		console.log('removing' ,this.mousemoveCallback)
 		this.box.setAttribute('width', 0);
 		this.box.setAttribute('height', 0);
-		this.svg.removeEventListener('mousemove', this.enlargeBox);
+		this.svg.removeEventListener('mousemove', this.mousemoveCallback);
 	}
 }
 
