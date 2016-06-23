@@ -2,6 +2,7 @@
 range of scores then normalises them to range across the length of
 colours array. An object pairing currency and the colours is returned */
 function getColours(scores){
+
 	//get max, min and range
 	var min = Infinity, max = -Infinity;
 	Object.keys(scores).forEach(function(currency) {
@@ -9,13 +10,17 @@ function getColours(scores){
 		if(scores[currency] > max) max = scores[currency];
 	});
 	var range = max - min;
+	console.log(max, min, range)
 	//build colours object
-	var colourObj = new Object();
+	var colourObj = {};
+	var test = {}
 	Object.keys(scores).forEach((currency) => {
 			var normalised = Math.floor(((scores[currency] - min)/range)*(colours.length-1));
 			//normalised is an integer from 0 to the length of colours array corresponding to the score
 			colourObj[currency] = colours[normalised];
+			test[currency] = normalised
 	});
+	console.log(test)
 	return colourObj;
 }
 
