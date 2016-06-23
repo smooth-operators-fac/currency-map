@@ -1,15 +1,30 @@
 var selectBox = {
+	on: false,
 	pt: null,
 	svg: null,
 	box: null,
 	start: null,
 	mousemoveCallback: null,
+	createBoxCallback: null,
+	removeBoxCallback: null,
 	init: function(){
+		this.on = true;
 		this.svg = document.querySelector('svg');
 		this.pt = this.svg.createSVGPoint();
 		this.box = document.getElementsByClassName('selectbox')[0];
-		this.svg.addEventListener('mousedown', (e) => this.createBox(e));
-		this.svg.addEventListener('mouseup', (e) => this.removeBox(e));
+		this.createBoxCallback = (function(e){
+			return this.createBox(e);
+		}).bind(this);
+		this.removeBoxCallback = (function(e){
+			return this.removeBox(e);
+		}).bind(this);
+		this.svg.addEventListener('mousedown', this.createBoxCallback);
+		this.svg.addEventListener('mouseup', this.removeBoxCallback);
+	},
+	deactivate: function(){
+		this.svg.removeEventListener('mousedown', this.createBoxCallback);
+		this.svg.removeEventListener('mouseup', this.removeBoxCallback);
+		this.on = false;
 	},
 	getPoint: function(e){
 		this.pt.x = e.clientX;
@@ -31,7 +46,6 @@ var selectBox = {
 		this.svg.addEventListener('mousemove', this.mousemoveCallback);
 	},
 	enlargeBox:	function(e){
-		console.log('moving')
 			var newPt = this.getPoint.bind(selectBox)(e)
 			var y = newPt.y
 			var x = newPt.x
@@ -55,7 +69,6 @@ var selectBox = {
 			this.box.setAttribute('height', height);
 	},
 	removeBox: function (e){
-		console.log('removing' ,this.mousemoveCallback)
 		this.box.setAttribute('width', 0);
 		this.box.setAttribute('height', 0);
 		this.svg.removeEventListener('mousemove', this.mousemoveCallback);
@@ -118,15 +131,20 @@ function changeColour(e){
 function addEventListeners(){
 	var nodeList = document.getElementsByClassName('country');
 	[].forEach.call(nodeList,function(node){
-		node.addEventListener('click',changeColour,false)
+		node.addEventListener('click',changeColour)
 	});
+	document.getElementsByClassName('button')[0].addEventListener('click',function(){
+		if (selectBox.on){
+			selectBox.deactivate()
+		} else {
+			selectBox.init();
+		}
+	})
 };
 
 
 //attach the event listeners
-selectBox.init();
 addEventListeners();
-
 
 
 /*--------------- static data -------------*/

@@ -1,8 +1,17 @@
-body{
-  position: relative;
+.button {
+  border: 2px solid black;
+  width: 100px;
+  text-align: center;
+  background-color: white;
+  color: black;
+  transform: translate(60px, -90px);
+  border-radius: 10px;
+  padding: 5px 0 5px 0;
 }
-
-.selectbox{
-  position: absolute;
-  border: 2px solid white;
+.button:hover{
+  background-color: black;
+  color: white;
+}
+.button:active{
+  transform: translate(60px, -90px) scale(1.1, 1.1);
 }
