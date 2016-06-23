@@ -1,8 +1,3 @@
-//function getScores(currency){
-		//matthia's function
-//		return placeholderObj;
-//}
-
 /* Function is passed the scores object. It calculates the max, min and the
 range of scores then normalises them to range across the length of
 colours array. An object pairing currency and the colours is returned */
@@ -50,14 +45,6 @@ function changeColour(e){
 	if (!unclicking) {
 		countryNode.setAttribute('fill', 'white');
 	}
-}
-
-/* This function has been superceded */
-function getCountries(){
-	return [].slice.call(document.getElementsByClassName('country'))
-		.map(function(node){
-				return node.getAttribute('countryid')
-		});
 }
 
 /* Attaches a click event listener to every country */
