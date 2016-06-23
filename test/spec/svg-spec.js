@@ -7,6 +7,8 @@ describe('Sam and Jakub want', function(){
 
 
   it('a country to change its colour when clicked', function(){
+
+    spyOn(currencyOBJ, 'getScores').and.returnValue({})
     var node = document.getElementsByClassName('country')[0]
     var fakeEvent = {
       target: node
@@ -46,6 +48,7 @@ describe('Sam and Jakub want', function(){
   })
 
   it('clicking the same country twice to deselect it', function(){
+    spyOn(currencyOBJ, 'getScores').and.returnValue({})
     var node = document.getElementsByClassName('country')[0]
     var fakeEvent = {
       target: node
