@@ -48,8 +48,9 @@ var selectBox = {
 			return this.enlargeBox(e);
 		}).bind(this);
 		this.svg.addEventListener('mousemove', this.mousemoveCallback);
-		self = this;
-		this.interval = setInterval(self.getSelected.bind(selectBox), 50)
+		var intervalCallback = () => this.getSelected();
+		this.interval = setInterval(intervalCallback, 50);
+		console.log(this.interval)
 	},
 	enlargeBox:	function(e){
 			var newPt = this.getPoint.bind(selectBox)(e)
@@ -84,8 +85,8 @@ var selectBox = {
 	getSelected: function(){
 		this.selected = []
 		self = this;
-		Object.keys(this.bbox).forEach(function(country){
-			var bbox = self.bbox[country]
+		Object.keys(self.bboxes).forEach(function(country){
+			var bbox = self.bboxes[country]
 			var r1_xmin = self.box.getAttribute('x')
 			var r1_xmax = self.box.getAttribute('width')+r1_xmin
 			var r2_xmin = bbox.x
