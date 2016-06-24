@@ -52,8 +52,6 @@ var selectBox = {
 			return this.enlargeBox(e);
 		}).bind(this);
 		this.svg.addEventListener('mousemove', this.mousemoveCallback);
-		var intervalCallback = () => this.getSelected();
-		this.interval = setInterval(intervalCallback, 50);
 	},
 	enlargeBox:	function(e){
 			var newPt = this.getPoint.bind(selectBox)(e)
@@ -79,13 +77,13 @@ var selectBox = {
 			this.box.setAttribute('height', height);
 	},
 	removeBox: function (e){
+		this.getSelected()
 		var bbox = this.box.getBBox()
 		var viewBoxString = bbox.x + ' ' + bbox.y + ' ' + bbox.width + ' ' + bbox.height;
 		this.svg.setAttribute('viewBox', viewBoxString);
 		this.box.setAttribute('width', 0);
 		this.box.setAttribute('height', 0);
 		this.svg.removeEventListener('mousemove', this.mousemoveCallback);
-		clearInterval(this.interval);
 		console.log(this.selected)
 	},
 	getSelected: function(){
@@ -93,22 +91,50 @@ var selectBox = {
 		self = this;
 		Object.keys(self.bboxes).forEach(function(country){
 			var bbox = self.bboxes[country]
-			var r1_xmin = self.box.getAttribute('x')
-			var r1_xmax = self.box.getAttribute('width')+r1_xmin
+			var sbox = self.box.getBBox()
+			var r1_xmin = sbox.x
+			var r1_xmax = sbox.x + sbox.width
+			var r1_ymin = sbox.y 
+			var r1_ymax = sbox.y + sbox.height
 			var r2_xmin = bbox.x
 			var r2_xmax = bbox.x+bbox.width
-			var r1_ymin = self.box.getAttribute('y')
-			var r1_ymax = self.box.getAttribute('height')+r1_ymin
 			var r2_ymin = bbox.y
 			var r2_ymax = bbox.y+bbox.height
 			if (!(r1_xmin > r2_xmax ||
-						r1_xmax < r2_xmin ||
-						r1_ymin > r2_ymax ||
-						r1_ymax < r2_ymin	)){
-							self.selected.push(country)
-						}
+				r1_xmax < r2_xmin ||
+				r1_ymin > r2_ymax ||
+				r1_ymax < r2_ymin )){
+				self.selected.push(country)
+			}
 		});
 	}
+}
+
+function drawBBoxes(bboxes){
+	Object.keys(bboxes).forEach(function(country){
+		var bbox = bboxes[country]
+		bbox = transformBBox(bbox)
+		var svgNS = "http://www.w3.org/2000/svg";
+		var svg = document.querySelector('svg')
+		var rect = document.createElementNS(svgNS,"rect");
+		rect.setAttributeNS(null, "width", bbox.width);
+		rect.setAttributeNS(null, "height", bbox.height);
+		rect.setAttributeNS(null, "x", bbox.x);
+		rect.setAttributeNS(null, "y", bbox.y);
+		rect.setAttributeNS(null, "stroke", "black");
+		rect.setAttributeNS(null, "fill-opacity", "0");
+		svg.appendChild(rect);
+	})
+
+}
+function transformBBox(bbox){
+	console.log(bbox.width)
+	var scale = 1.0845853647833694*1.15
+	bbox.x = bbox.x + 127.21713419811213
+	bbox.y = bbox.y + 249.25940985847072 - 230
+	bbox.width = bbox.width * scale
+	bbox.height = bbox.height * scale
+	return bbox
 }
 
 /* Function is passed the scores object. It calculates the max, min and the
@@ -171,6 +197,7 @@ function addEventListeners(){
 		node.addEventListener('click',changeColour)
 		bboxes[node.getAttribute('countryid')] = node.getBBox();
 	});
+	drawBBoxes(bboxes);
 	document.getElementsByClassName('button')[0].addEventListener('click',function(){
 		if (selectBox.on){
 			selectBox.deactivate()
