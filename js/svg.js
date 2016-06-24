@@ -7,6 +7,7 @@ var selectBox = {
 	bboxes: null,
 	interval: null,
 	selected: [],
+	viewBox: '',
 	mousemoveCallback: null,
 	createBoxCallback: null,
 	removeBoxCallback: null,
@@ -14,6 +15,7 @@ var selectBox = {
 		this.on = true;
 		this.bboxes = bboxes
 		this.svg = document.querySelector('svg');
+		this.viewBox = this.svg.getAttribute('viewBox');
 		this.pt = this.svg.createSVGPoint();
 		this.box = document.getElementsByClassName('selectbox')[0];
 		this.createBoxCallback = (function(e){
@@ -29,6 +31,8 @@ var selectBox = {
 		this.svg.removeEventListener('mousedown', this.createBoxCallback);
 		this.svg.removeEventListener('mouseup', this.removeBoxCallback);
 		this.on = false;
+		this.selected = [];
+		this.svg.setAttribute('viewBox', this.viewBox)
 	},
 	getPoint: function(e){
 		this.pt.x = e.clientX;
@@ -50,7 +54,6 @@ var selectBox = {
 		this.svg.addEventListener('mousemove', this.mousemoveCallback);
 		var intervalCallback = () => this.getSelected();
 		this.interval = setInterval(intervalCallback, 50);
-		console.log(this.interval)
 	},
 	enlargeBox:	function(e){
 			var newPt = this.getPoint.bind(selectBox)(e)
@@ -76,6 +79,9 @@ var selectBox = {
 			this.box.setAttribute('height', height);
 	},
 	removeBox: function (e){
+		var bbox = this.box.getBBox()
+		var viewBoxString = bbox.x + ' ' + bbox.y + ' ' + bbox.width + ' ' + bbox.height;
+		this.svg.setAttribute('viewBox', viewBoxString);
 		this.box.setAttribute('width', 0);
 		this.box.setAttribute('height', 0);
 		this.svg.removeEventListener('mousemove', this.mousemoveCallback);
