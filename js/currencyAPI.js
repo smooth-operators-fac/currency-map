@@ -15,7 +15,7 @@ var currencyOBJ = {
 		this.callList = dates.map((el)=>{
 			return new Call(this.urls(el))
 		})
-		var xhrArray = [0,1,2,3,4].map((el) => 'xhr' + el)
+		var xhrArray = [0,1,2,3,4]
 
 		this.callList.forEach((el,i)=>{
 			xhrArray[i] = new XMLHttpRequest()
@@ -59,39 +59,14 @@ var currencyOBJ = {
 		},{})
 	},
 	rebase: function(base){
-		var newResponse = [];
-		this.response.forEach(function(obj, i){
-			var newObj = {}
-			Object.keys(obj).forEach(function(currency){
-				newObj[currency] = obj[currency]/obj[base]
-			})
-			newResponse.push(newObj)
-		})
-
-		var tempObj = {}
-		Object.keys(this.todayResponse[0]).forEach((currency) => {
-				tempObj[currency] = this.todayResponse[0][currency]/this.todayResponse[0][base]
-		})
-		var newTodayResponse = [tempObj]
-		var tempTodayResponse = this.todayResponse
-		this.todayResponse = newTodayResponse
-		var tempResponse = this.response
-		this.response = newResponse
-		this.computeAverage();
-		this.computeScores();
-		this.response = tempResponse
-		this.todayResponse = tempTodayResponse
-		return this.scores;
+		return Object.keys(this.scores).reduce((acc,current)=>{
+			acc[current]= this.scores[current]/this.scores[base]
+			return acc
+		},{})
 	},
+
 	getScores: function(base){
-		if(base === 'USD'){
-			console.log('base: ', base, ' | ', this.scores)
-			return this.scores;
-		} else {
-			var out = this.rebase(base)
-			console.log('base: ', base, ' | ', out)
-			return out
-		}
+		return (base === 'USD')? this.scores:this.rebase(base)
 	}
 }
 
