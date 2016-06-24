@@ -128,13 +128,13 @@ function drawBBoxes(bboxes){
 
 }
 function transformBBox(bbox){
-	console.log(bbox.width)
-	var scale = 1.0845853647833694*1.15
-	bbox.x = bbox.x + 127.21713419811213
-	bbox.y = bbox.y + 249.25940985847072 - 230
-	bbox.width = bbox.width * scale
-	bbox.height = bbox.height * scale
-	return bbox
+ var transformed = 	
+		var pt = this.svg.createSVGPoint();
+		pt.x = bbox.left;
+		pt.y = bbox.top;
+		pt = pt.matrixTransform(this.svg.getScreenCTM().inverse());
+
+	return transformed
 }
 
 /* Function is passed the scores object. It calculates the max, min and the
@@ -195,7 +195,7 @@ function addEventListeners(){
 	var nodeList = document.getElementsByClassName('country');
 	[].forEach.call(nodeList,function(node){
 		node.addEventListener('click',changeColour)
-		bboxes[node.getAttribute('countryid')] = node.getBBox();
+		bboxes[node.getAttribute('countryid')] = node.getBoundingClientRect()
 	});
 	drawBBoxes(bboxes);
 	document.getElementsByClassName('button')[0].addEventListener('click',function(){
