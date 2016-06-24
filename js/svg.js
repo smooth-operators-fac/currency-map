@@ -98,7 +98,7 @@ var selectBox = {
 			var r2_xmin = bbox.x
 			var r2_xmax = bbox.x+bbox.width
 			var r1_ymin = self.box.getAttribute('y')
-			var r1_ymax = self.box.getAttribute('height')+r2_xmin
+			var r1_ymax = self.box.getAttribute('height')+r1_ymin
 			var r2_ymin = bbox.y
 			var r2_ymax = bbox.y+bbox.height
 			if (!(r1_xmin > r2_xmax ||
