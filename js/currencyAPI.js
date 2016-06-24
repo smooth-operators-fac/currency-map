@@ -15,7 +15,7 @@ var currencyOBJ = {
 		this.callList = dates.map((el)=>{
 			return new Call(this.urls(el))
 		})
-		var xhrArray = [0,1,2,3,4].map((el) => 'xhr' + el)
+		var xhrArray = [0,1,2,3,4]
 
 		this.callList.forEach((el,i)=>{
 			xhrArray[i] = new XMLHttpRequest()
