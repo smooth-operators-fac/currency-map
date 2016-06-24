@@ -110,31 +110,42 @@ var selectBox = {
 	}
 }
 
+/* used for testing only. not needed */
 function drawBBoxes(bboxes){
 	Object.keys(bboxes).forEach(function(country){
 		var bbox = bboxes[country]
 		bbox = transformBBox(bbox)
+		console.log(bbox)
 		var svgNS = "http://www.w3.org/2000/svg";
 		var svg = document.querySelector('svg')
 		var rect = document.createElementNS(svgNS,"rect");
-		rect.setAttributeNS(null, "width", bbox.width);
-		rect.setAttributeNS(null, "height", bbox.height);
-		rect.setAttributeNS(null, "x", bbox.x);
-		rect.setAttributeNS(null, "y", bbox.y);
+		rect.setAttributeNS(null, "width", bbox['top-right']['x']-bbox['top-left']['x']);
+		rect.setAttributeNS(null, "height", bbox['bottom-left']['y']-bbox['top-left']['y']);
+		rect.setAttributeNS(null, "x", bbox['top-left']['x']);
+		rect.setAttributeNS(null, "y", bbox['top-left']['y']);
 		rect.setAttributeNS(null, "stroke", "black");
 		rect.setAttributeNS(null, "fill-opacity", "0");
 		svg.appendChild(rect);
 	})
-
 }
-function transformBBox(bbox){
- var transformed = 	
-		var pt = this.svg.createSVGPoint();
-		pt.x = bbox.left;
-		pt.y = bbox.top;
-		pt = pt.matrixTransform(this.svg.getScreenCTM().inverse());
 
-	return transformed
+/* from a clientRect returns an svg BBox-like object with co-ordinates
+   after all transforms (getBBox() by itself ignores transforms). */  
+function transformBBox(bbox){
+	var svg = document.querySelector('svg')
+	var transformed = {'top-left': 0, 'top-right': 0, 'bottom-left': 0, 'bottom-right': 0}	
+	var pt = svg.createSVGPoint();
+	Object.keys(transformed).forEach(function(corner, i){
+		pt.y = bbox[corner.split('-')[0]];
+		pt.x = bbox[corner.split('-')[1]];
+		transformed[corner] = pt.matrixTransform(svg.getScreenCTM().inverse());
+	})
+	var out = {x: 0, y: 0, width: 0, height: 0}
+	out.width = transformed['top-right']['x']-transformed['top-left']['x']
+	out.height = transformed['bottom-left']['y']-transformed['top-left']['y']
+	out.x = transformed['top-left']['x']
+	out.y = transformed['top-left']['y']
+	return out
 }
 
 /* Function is passed the scores object. It calculates the max, min and the
@@ -195,9 +206,8 @@ function addEventListeners(){
 	var nodeList = document.getElementsByClassName('country');
 	[].forEach.call(nodeList,function(node){
 		node.addEventListener('click',changeColour)
-		bboxes[node.getAttribute('countryid')] = node.getBoundingClientRect()
+		bboxes[node.getAttribute('countryid')] = transformBBox(node.getBoundingClientRect())
 	});
-	drawBBoxes(bboxes);
 	document.getElementsByClassName('button')[0].addEventListener('click',function(){
 		if (selectBox.on){
 			selectBox.deactivate()
