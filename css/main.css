@@ -7,6 +7,14 @@
   transform: translate(60px, -90px);
   border-radius: 10px;
   padding: 5px 0 5px 0;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 .button:hover{
   background-color: black;

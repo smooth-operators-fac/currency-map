@@ -4,11 +4,15 @@ var selectBox = {
 	svg: null,
 	box: null,
 	start: null,
+	bboxes: null,
+	interval: null,
+	selected: [],
 	mousemoveCallback: null,
 	createBoxCallback: null,
 	removeBoxCallback: null,
-	init: function(){
+	init: function(bboxes){
 		this.on = true;
+		this.bboxes = bboxes
 		this.svg = document.querySelector('svg');
 		this.pt = this.svg.createSVGPoint();
 		this.box = document.getElementsByClassName('selectbox')[0];
@@ -44,6 +48,8 @@ var selectBox = {
 			return this.enlargeBox(e);
 		}).bind(this);
 		this.svg.addEventListener('mousemove', this.mousemoveCallback);
+		self = this;
+		this.interval = setInterval(self.getSelected.bind(selectBox), 50)
 	},
 	enlargeBox:	function(e){
 			var newPt = this.getPoint.bind(selectBox)(e)
@@ -72,6 +78,29 @@ var selectBox = {
 		this.box.setAttribute('width', 0);
 		this.box.setAttribute('height', 0);
 		this.svg.removeEventListener('mousemove', this.mousemoveCallback);
+		clearInterval(this.interval);
+		console.log(this.selected)
+	},
+	getSelected: function(){
+		this.selected = []
+		self = this;
+		Object.keys(this.bbox).forEach(function(country){
+			var bbox = self.bbox[country]
+			var r1_xmin = self.box.getAttribute('x')
+			var r1_xmax = self.box.getAttribute('width')+r1_xmin
+			var r2_xmin = bbox.x
+			var r2_xmax = bbox.x+bbox.width
+			var r1_ymin = self.box.getAttribute('y')
+			var r1_ymax = self.box.getAttribute('height')+r2_xmin
+			var r2_ymin = bbox.y
+			var r2_ymax = bbox.y+bbox.height
+			if (!(r1_xmin > r2_xmax ||
+						r1_xmax < r2_xmin ||
+						r1_ymin > r2_ymax ||
+						r1_ymax < r2_ymin	)){
+							self.selected.push(country)
+						}
+		});
 	}
 }
 
@@ -129,15 +158,17 @@ function changeColour(e){
 
 /* Attaches a click event listener to every country */
 function addEventListeners(){
+	var bboxes = {}
 	var nodeList = document.getElementsByClassName('country');
 	[].forEach.call(nodeList,function(node){
 		node.addEventListener('click',changeColour)
+		bboxes[node.getAttribute('countryid')] = node.getBBox();
 	});
 	document.getElementsByClassName('button')[0].addEventListener('click',function(){
 		if (selectBox.on){
 			selectBox.deactivate()
 		} else {
-			selectBox.init();
+			selectBox.init(bboxes);
 		}
 	})
 };
