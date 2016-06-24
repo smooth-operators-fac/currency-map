@@ -9,7 +9,7 @@ var currencyOBJ = {
 	init: function(){
 		this.interval = setInterval(this.watch.bind(currencyOBJ),10)
 		var now = new Date()
-		var dates = [1,365,700,1000,1300].map(el=>{
+		var dates = [0,365,700,1000,1300].map(el=>{
 			return now.subDays(el).format()
 		})
 		this.callList = dates.map((el)=>{
