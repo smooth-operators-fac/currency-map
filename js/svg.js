@@ -34,6 +34,7 @@ var selectBox = {
 		this.selected = [];
 		this.svg.setAttribute('viewBox', this.viewBox)
 	},
+	/* convert screen co-ordinates to svg co-ordinates */
 	getPoint: function(e){
 		this.pt.x = e.clientX;
 		this.pt.y = e.clientY;
@@ -52,8 +53,6 @@ var selectBox = {
 			return this.enlargeBox(e);
 		}).bind(this);
 		this.svg.addEventListener('mousemove', this.mousemoveCallback);
-		var intervalCallback = () => this.getSelected();
-		this.interval = setInterval(intervalCallback, 50);
 	},
 	enlargeBox:	function(e){
 			var newPt = this.getPoint.bind(selectBox)(e)
@@ -79,13 +78,14 @@ var selectBox = {
 			this.box.setAttribute('height', height);
 	},
 	removeBox: function (e){
+		this.getSelected()
 		var bbox = this.box.getBBox()
 		var viewBoxString = bbox.x + ' ' + bbox.y + ' ' + bbox.width + ' ' + bbox.height;
 		this.svg.setAttribute('viewBox', viewBoxString);
 		this.box.setAttribute('width', 0);
 		this.box.setAttribute('height', 0);
 		this.svg.removeEventListener('mousemove', this.mousemoveCallback);
-		clearInterval(this.interval);
+		window.changeColour({target: window.clickedCountry})
 		console.log(this.selected)
 	},
 	getSelected: function(){
@@ -93,29 +93,83 @@ var selectBox = {
 		self = this;
 		Object.keys(self.bboxes).forEach(function(country){
 			var bbox = self.bboxes[country]
-			var r1_xmin = self.box.getAttribute('x')
-			var r1_xmax = self.box.getAttribute('width')+r1_xmin
+			var sbox = self.box.getBBox()
+			var r1_xmin = sbox.x
+			var r1_xmax = sbox.x + sbox.width
+			var r1_ymin = sbox.y 
+			var r1_ymax = sbox.y + sbox.height
 			var r2_xmin = bbox.x
 			var r2_xmax = bbox.x+bbox.width
-			var r1_ymin = self.box.getAttribute('y')
-			var r1_ymax = self.box.getAttribute('height')+r2_xmin
 			var r2_ymin = bbox.y
 			var r2_ymax = bbox.y+bbox.height
 			if (!(r1_xmin > r2_xmax ||
-						r1_xmax < r2_xmin ||
-						r1_ymin > r2_ymax ||
-						r1_ymax < r2_ymin	)){
-							self.selected.push(country)
-						}
+				r1_xmax < r2_xmin ||
+				r1_ymin > r2_ymax ||
+				r1_ymax < r2_ymin )){
+					var currency = countryCurrencies[country]
+					if (self.selected.indexOf('currency') < 0){
+						self.selected.push(currency)
+					}
+			}
 		});
 	}
 }
 
+/* used for testing only. not needed */
+function drawBBoxes(bboxes){
+	Object.keys(bboxes).forEach(function(country){
+		var bbox = bboxes[country]
+		bbox = transformBBox(bbox)
+		console.log(bbox)
+		var svgNS = "http://www.w3.org/2000/svg";
+		var svg = document.querySelector('svg')
+		var rect = document.createElementNS(svgNS,"rect");
+		rect.setAttributeNS(null, "width", bbox['top-right']['x']-bbox['top-left']['x']);
+		rect.setAttributeNS(null, "height", bbox['bottom-left']['y']-bbox['top-left']['y']);
+		rect.setAttributeNS(null, "x", bbox['top-left']['x']);
+		rect.setAttributeNS(null, "y", bbox['top-left']['y']);
+		rect.setAttributeNS(null, "stroke", "black");
+		rect.setAttributeNS(null, "fill-opacity", "0");
+		svg.appendChild(rect);
+	})
+}
+
+/* from a clientRect returns an svg BBox-like object with co-ordinates
+   after all transforms (getBBox() by itself ignores transforms). */  
+function transformBBox(bbox){
+	var svg = document.querySelector('svg')
+	var transformed = {'top-left': 0, 'top-right': 0, 'bottom-left': 0, 'bottom-right': 0}	
+	var pt = svg.createSVGPoint();
+	Object.keys(transformed).forEach(function(corner, i){
+		pt.y = bbox[corner.split('-')[0]];
+		pt.x = bbox[corner.split('-')[1]];
+		transformed[corner] = pt.matrixTransform(svg.getScreenCTM().inverse());
+	})
+	var out = {x: 0, y: 0, width: 0, height: 0}
+	out.width = transformed['top-right']['x']-transformed['top-left']['x']
+	out.height = transformed['bottom-left']['y']-transformed['top-left']['y']
+	out.x = transformed['top-left']['x']
+	out.y = transformed['top-left']['y']
+	return out
+}
+
+/* temporary solution: globak variable to hold clicked country */ 
+window.clickedCountry = {getAttribute: function(){return null}};
+
 /* Function is passed the scores object. It calculates the max, min and the
 range of scores then normalises them to range across the length of
 colours array. An object pairing currency and the colours is returned */
-function getColours(scores){
-
+function getColours(inp){
+	//set scores to inp or delete unselected countries
+	var scores = inp
+	if (selectBox.on){
+		scores = {}
+		Object.keys(inp).forEach(function(currency){
+			if (selectBox.selected.indexOf(currency) > -1){
+				scores[currency] = inp[currency]
+			}
+		})
+	}	
 	//get max, min and range
 	var min = Infinity, max = -Infinity;
 	Object.keys(scores).forEach(function(currency) {
@@ -125,13 +179,19 @@ function getColours(scores){
 	var range = max - min;
 	//build colours object
 	var colourObj = {};
-	var test = {}
 	Object.keys(scores).forEach((currency) => {
 		var normalised = Math.floor(((scores[currency] - min)/range)*(colours.length-1));
 		//normalised is an integer from 0 to the length of colours array corresponding to the score
 		colourObj[currency] = colours[normalised];
-		test[currency] = normalised
 	});
+	//fill remaining currencies grey
+	if(selectBox.on){
+		Object.keys(inp).forEach(function(currency){
+			if(!colourObj.hasOwnProperty(currency)){
+				colourObj[currency] = '#818181'
+			}
+		})
+	}
 	return colourObj;
 }
 
@@ -140,9 +200,9 @@ retrieves colour object from getColours, and updates the fill attribute of
 all the other countries */
 function changeColour(e){
 	var countryNode = e.target;
-	var unclicking = countryNode.getAttribute('fill') === 'white'
+	var baseCountry = countryNode.getAttribute('countryid');
+	var unclicking = (baseCountry == clickedCountry.getAttribute('countryid'))  && !selectBox.on
 	if (!unclicking) {
-		var baseCountry = countryNode.getAttribute('countryid');
 		var currency = countryCurrencies[baseCountry];
 		var scores = currencyOBJ.getScores(currency);
 		var colourObj = getColours(scores);
@@ -160,6 +220,9 @@ function changeColour(e){
 	});
 	if (!unclicking) {
 		countryNode.setAttribute('fill', 'white');
+		clickedCountry = countryNode
+	} else {
+		clickedCountry = {getAttribute: function(){return null}}
 	}
 }
 
@@ -169,7 +232,7 @@ function addEventListeners(){
 	var nodeList = document.getElementsByClassName('country');
 	[].forEach.call(nodeList,function(node){
 		node.addEventListener('click',changeColour)
-		bboxes[node.getAttribute('countryid')] = node.getBBox();
+		bboxes[node.getAttribute('countryid')] = transformBBox(node.getBoundingClientRect())
 	});
 	document.getElementsByClassName('button')[0].addEventListener('click',function(){
 		if (selectBox.on){
