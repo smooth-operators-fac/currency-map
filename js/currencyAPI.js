@@ -33,7 +33,7 @@ var apiCaller = {
 }
 
 function generateDates(){
-	var now = new Date()
+	var now = new MyDate()
 	apiCaller.dates = [0,365,700,1000,1300].map(el=> now.subtractDays(el).format())
 }
 
@@ -77,14 +77,20 @@ function rebase(base){
         computeScores(tmpObj)
 	return apiCaller.scores
 }
-Date.prototype.subtractDays = function(days){
-	var date = new Date()
-	date.setTime(date.getTime() - days*3600*24*1000)
-	return date
-}
-Date.prototype.format = function(){
-	var addZ =  (n)=>{return n<10? '0'+n:''+n;}
-	return this.getFullYear() + '-'+ addZ(this.getMonth()+1)+ '-' + addZ(this.getDate())
+function MyDate (){
+	this.date = new Date()
+	this.subtractDays = function(days){
+		this.date.setTime(this.date.getTime() - days*3600*24*1000)
+		console.log(this.date)
+		return this
+	},
+	this.format = function(){
+		var addZ =  (n)=>{return n<10? '0'+n:''+n;}
+		console.log(this.date.getFullYear() + '-'+ addZ(this.date.getMonth()+1)+ '-' + addZ(this.date.getDate())	
+)
+		return this.date.getFullYear() + '-'+ addZ(this.date.getMonth()+1)+ '-' + addZ(this.date.getDate())	
+	}
+
 }
 
 apiCaller.runCalls()
