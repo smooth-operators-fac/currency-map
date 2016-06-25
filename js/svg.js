@@ -34,6 +34,7 @@ var selectBox = {
 		this.selected = [];
 		this.svg.setAttribute('viewBox', this.viewBox)
 	},
+	/* convert screen co-ordinates to svg co-ordinates */
 	getPoint: function(e){
 		this.pt.x = e.clientX;
 		this.pt.y = e.clientY;
