@@ -23,11 +23,8 @@ var apiCaller = {
 
 	},
 	runCalculations(){
-		console.log('im here!')	
 		computeAverage(this.response)
 		computeScores(this.response)
-		console.log(this.average)
-		console.log(this.scores)
 	},
 	getScores(base){
 		if(this.scores == null){console.log('data not ready yet'); return false}
