@@ -205,6 +205,7 @@ function changeColour(e){
 	var unclicking = (baseCountry == clickedCountry.getAttribute('countryid'))  && !selectBox.on
 	if (!unclicking) {
 		var currency = countryCurrencies[baseCountry];
+		console.log(currency)
 		var scores = apiCaller.getScores(currency);
 		var colourObj = getColours(scores);
 	}

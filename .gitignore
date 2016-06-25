@@ -5,3 +5,4 @@
 .yo-rc.json
 *.DS_Store
 bower_components
+sandbox.js

@@ -1,43 +1,43 @@
-'use strict'
+	'use strict'
+	var apiCaller = {
+		dates: null,
+		callList: null,
+		todayResponse: null,
+		response: [],
+		average: null,
+		scores: null,
+		runCalls(){
+			generateDates()
+			populateCallList()
+			Promise.all([callApi(this.callList[0]),callApi(this.callList[1]),
+				    callApi(this.callList[2]),callApi(this.callList[3]),
+				    callApi(this.callList[4])] )
+				    .then((responseArray)=>{
+					    for(var i = 0; i<responseArray.length; i++){
+						    if(i==0){this.todayResponse = JSON.parse(responseArray[i]).rates}
+						    else{this.response.push(JSON.parse(responseArray[i]).rates)} 	
+					    }
+					    this.runCalculations()
+				    })
 
-var apiCaller = {
-	dates: null,
-	callList: null,
-	todayResponse: null,
-	response: [],
-	average: null,
-	scores: null,
-	runCalls(){
-		generateDates()
-		populateCallList()
-		Promise.all([callApi(this.callList[0]),callApi(this.callList[1]),
-			    callApi(this.callList[2]),callApi(this.callList[3]),
-			    callApi(this.callList[4])] )
-			    .then((responseArray)=>{
-				    for(var i = 0; i<responseArray.length; i++){
-					    if(i==0){this.todayResponse = JSON.parse(responseArray[i]).rates}
-					    else{this.response.push(JSON.parse(responseArray[i]).rates)} 	
-				    }
-				    this.runCalculations()
-			    })
-
-	},
-	runCalculations(){
-		computeAverage(this.response)
-		computeScores(this.response)
-	},
-	getScores(base){
-		if(this.scores == null){console.log('data not ready yet'); return false}
-		else{return (base === 'USD')? this.scores: rebase(base)}
+		},
+		runCalculations(){
+			console.log('this is responsebefore calcs',this.response)
+			computeAverage(this.response)
+			computeScores(this.average,this.todayResponse)
+		},
+		getScores(base){
+			if(this.scores == null){console.log('data not ready yet'); return false}
+			else{if (base === 'USD'){ console.log('score is: ',this.scores);return this.scores}else {return rebase(base)}}
+		}
 	}
-}
 
-function generateDates(){
-	var now = new MyDate()
-	apiCaller.dates = [0,365,700,1000,1300].map(el=> now.subtractDays(el).format())
-}
+	function generateDates(){
+		var now = new MyDate()
+		apiCaller.dates = [1,365,700,1000,1300].map(el=> now.subtractDays(el).format())
+	}
 
-function populateCallList(){
+	function populateCallList(){
 	apiCaller.callList = apiCaller.dates.map((el)=> urls(el))
 }
 
@@ -62,32 +62,35 @@ function computeAverage(){
 		return acc
 	},{})
 }
-function computeScores(){
-	apiCaller.scores = Object.keys(apiCaller.average).reduce((acc,current)=>{
-		acc[current] =  (apiCaller.todayResponse[current] - apiCaller.average[current])/apiCaller.average[current]
+function computeScores(averages, today){
+	apiCaller.scores = Object.keys(averages).reduce((acc,current)=>{
+		acc[current] =  (today[current] - averages[current])/averages[current]
 		return acc
 	},{})
 }
 function rebase(base){
-	var tmpObj
-	tmpObj  = Object.keys(apiCaller.average).reduce((acc,current)=>{
+	var tmpAverages,tmpToday
+	tmpAverages  = Object.keys(apiCaller.average).reduce((acc,current)=>{
 		acc[current] = apiCaller.average[current]/apiCaller.average[base]
 		return acc
 	},{})
-        computeScores(tmpObj)
+	tmpToday = Object.keys(apiCaller.todayResponse).reduce((acc,current)=>{
+		acc[current] = apiCaller.todayResponse[current]/apiCaller.todayResponse[base]
+		return acc
+	},{})
+
+        computeScores(tmpAverages,tmpToday)
+	console.log(apiCaller.scores)
 	return apiCaller.scores
 }
 function MyDate (){
 	this.date = new Date()
 	this.subtractDays = function(days){
 		this.date.setTime(this.date.getTime() - days*3600*24*1000)
-		console.log(this.date)
 		return this
 	},
 	this.format = function(){
 		var addZ =  (n)=>{return n<10? '0'+n:''+n;}
-		console.log(this.date.getFullYear() + '-'+ addZ(this.date.getMonth()+1)+ '-' + addZ(this.date.getDate())	
-)
 		return this.date.getFullYear() + '-'+ addZ(this.date.getMonth()+1)+ '-' + addZ(this.date.getDate())	
 	}
 
