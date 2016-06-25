@@ -84,6 +84,7 @@ var selectBox = {
 		this.box.setAttribute('width', 0);
 		this.box.setAttribute('height', 0);
 		this.svg.removeEventListener('mousemove', this.mousemoveCallback);
+		window.changeColour({target: window.clickedCountry})
 		console.log(this.selected)
 	},
 	getSelected: function(){
@@ -104,7 +105,10 @@ var selectBox = {
 				r1_xmax < r2_xmin ||
 				r1_ymin > r2_ymax ||
 				r1_ymax < r2_ymin )){
-				self.selected.push(country)
+					var currency = countryCurrencies[country]
+					if (self.selected.indexOf('currency') < 0){
+						self.selected.push(currency)
+					}
 			}
 		});
 	}
@@ -148,11 +152,23 @@ function transformBBox(bbox){
 	return out
 }
 
+/* temporary solution: globak variable to hold clicked country */ 
+window.clickedCountry = {getAttribute: function(){return null}};
+
 /* Function is passed the scores object. It calculates the max, min and the
 range of scores then normalises them to range across the length of
 colours array. An object pairing currency and the colours is returned */
-function getColours(scores){
-
+function getColours(inp){
+	//set scores to inp or delete unselected countries
+	var scores = inp
+	if (selectBox.on){
+		scores = {}
+		Object.keys(inp).forEach(function(currency){
+			if (selectBox.selected.indexOf(currency) > -1){
+				scores[currency] = inp[currency]
+			}
+		})
+	}	
 	//get max, min and range
 	var min = Infinity, max = -Infinity;
 	Object.keys(scores).forEach(function(currency) {
@@ -162,13 +178,19 @@ function getColours(scores){
 	var range = max - min;
 	//build colours object
 	var colourObj = {};
-	var test = {}
 	Object.keys(scores).forEach((currency) => {
 		var normalised = Math.floor(((scores[currency] - min)/range)*(colours.length-1));
 		//normalised is an integer from 0 to the length of colours array corresponding to the score
 		colourObj[currency] = colours[normalised];
-		test[currency] = normalised
 	});
+	//fill remaining currencies grey
+	if(selectBox.on){
+		Object.keys(inp).forEach(function(currency){
+			if(!colourObj.hasOwnProperty(currency)){
+				colourObj[currency] = '#818181'
+			}
+		})
+	}
 	return colourObj;
 }
 
@@ -177,9 +199,9 @@ retrieves colour object from getColours, and updates the fill attribute of
 all the other countries */
 function changeColour(e){
 	var countryNode = e.target;
-	var unclicking = countryNode.getAttribute('fill') === 'white'
+	var baseCountry = countryNode.getAttribute('countryid');
+	var unclicking = (baseCountry == clickedCountry.getAttribute('countryid'))  && !selectBox.on
 	if (!unclicking) {
-		var baseCountry = countryNode.getAttribute('countryid');
 		var currency = countryCurrencies[baseCountry];
 		var scores = currencyOBJ.getScores(currency);
 		var colourObj = getColours(scores);
@@ -197,6 +219,9 @@ function changeColour(e){
 	});
 	if (!unclicking) {
 		countryNode.setAttribute('fill', 'white');
+		clickedCountry = countryNode
+	} else {
+		clickedCountry = {getAttribute: function(){return null}}
 	}
 }
 
