@@ -101,7 +101,7 @@ function Call(url){
 
 
 Date.prototype.subDays = function(days){
-	var date = new Date(this.valueOf())
+	var date = new Date()
 	date.setTime(date.getTime() - days*3600*24*1000)
 	return date
 }
