@@ -1,3 +1,6 @@
+/*Loaded data will be passed as argument to callback of exported getPPP
+function. The callback will be executed asynchronously on load */
+
 const parse = require('csv-parse');
 const fs = require('fs');
 
