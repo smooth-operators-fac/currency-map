@@ -18,7 +18,6 @@ function pub(request, response){
   });
 }
 
-//export functions
 module.exports = {
   index: index,
   pub: pub,
