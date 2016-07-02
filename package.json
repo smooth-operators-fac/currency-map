@@ -4,7 +4,7 @@
   "description": "visualise exchange rate fluctuations",
   "main": "index.js",
   "scripts": {
-    "test": "node test/server-test.js",
+    "test": "node test/backend/server-test.js",
     "start": "nodemon server/server.js"
   },
   "keywords": [],
@@ -13,7 +13,7 @@
 	  "type": "git",
 	  "url": "git+https://github.com/smooth-operators/currency-map.git"
   },
-  "homepage": "https://github.com/smooth-operators/currency-map.git"
+  "homepage": "https://github.com/smooth-operators/currency-map.git",
   "license": "ISC",
   "devDependencies": {
     "istanbul": "^0.4.4",

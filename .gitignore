@@ -6,5 +6,5 @@
 *.DS_Store
 sandbox.js
 .bower.json
-lib
+test/lib
 node_modules
