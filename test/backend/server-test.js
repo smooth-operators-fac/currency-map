@@ -7,7 +7,7 @@ var handler = require('../../server/handler.js');
 tape('GET request to / endpoint', function(t){
   shot.inject(handler, {method: 'get', url: '/'}, function(res){
     t.equal(res.statusCode, 200, 'responds with status 200');
-    t.ok(res.payload.includes('<!DOCTYPE'), 'responds with html file');
+    t.ok(res.payload.includes('<!DOCTYPE html'), 'responds with html file');
     t.equal(res.headers['Content-Type'], 'text/html', 'responds with header specifying type html');
     t.end();
   });
