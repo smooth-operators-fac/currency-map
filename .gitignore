@@ -6,3 +6,4 @@
 *.DS_Store
 sandbox.js
 .bower.json
+lib
