@@ -1,17 +1,14 @@
-
-var urlPaths = require('./urlPaths');
+var paths = require('./paths');
 
 const handler = function(request, response){
   var url = request.url;//
   if(url === '/'){
-    urlPaths.urlPathToIndex(request, response);
+    paths.index(request, response);
   } else if (url.includes('/public')){
-    urlPaths.urlPathToPublic(request, response)
-  } else if (url.includes('/find')){
-    urlPaths.urlPathToFind(request, response);
+    paths.pub(request, response)
   } else {
     response.writeHead(404);
-    response.end('WRONG!');
+    response.end('The URL you have requested does not exist');
   }
 };
 
