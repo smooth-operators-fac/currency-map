@@ -23,7 +23,7 @@ const MyDate = function (){
 /* generates an array of @number dates @interval days apart,
  * counting back from @start */ 
 const makeDates = function(start, interval, number){
-	const dates = []
+	let dates = []
 	const now = new MyDate()
 	const then = now.subtractDays(start)
 	for (let i = 1; i <= number; i++){
@@ -37,9 +37,9 @@ const makeDates = function(start, interval, number){
 const makeURLs = function (dates){
 	const base = 'https://openexchangerates.org/api/';
 	const id = 'app_id=bdf1519ec8b749ff8d01851d7da1391f';
-	const historical = 'historical/'+ date + '.json';
 
 	return dates.map((date) => {
+		const historical = 'historical/'+ date + '.json';
 		return (base + historical +'?' + id)
 	})
 }
