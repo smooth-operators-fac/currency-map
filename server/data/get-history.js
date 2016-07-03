@@ -46,10 +46,11 @@ const makeURLs = function (dates){
 
 /* generates array of promises from array of URLS */
 const makePromises = function(urls){
-	return urls.reduce((promise, url) => {
+	return urls.map((url) => {
 		return new Promise(function (resolve, reject){
 			const req = new XMLHttpRequest();
 			req.open('GET', url, true);
+			console.log(`in handler url is ${req.url}`)
 			req.onload = function (){
 				if(this.status === 200|| this.status === 304){
 					resolve(req)
@@ -66,11 +67,11 @@ const chainPromises = function(promises){
 	const chain = promises.map((p) => {
 		return p.then(
 			(req) => {
-				console.log(`\nSUCCESS with ${req.url}`)
+				console.log(`SUCCESS with ${req.url}`)
 				return req.responseText
 			},
 			(req) => {
-				console.log(`\nFAILURE with ${req.url}`)
+				console.log(`FAILURE with ${req.url}`)
 				return `failed with ${req.url}`
 			})
 	})
@@ -114,7 +115,7 @@ const getData = function (start, interval, number){
 		})
 		writeResults(failures, 'failures')
 			.then(() => writeResults(successes, 'successes'))
-			.then(() => process.exit(0)
+			.then(() => {console.log('\n'); return process.exit(0)}
 			)
 	})
 }
@@ -143,7 +144,11 @@ const getParams = function(){
 			return rl.close()
 		}
 	}).on('close', () => {
-		console.log('\nSending API requests...')
+		console.log(
+`.......................
+Sending API requests...
+.......................`
+		)
 		getData(...params)
 	})
 	next()
