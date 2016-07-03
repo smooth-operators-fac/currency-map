@@ -5,6 +5,7 @@
  * interval of dates before running API requests */
 
 const fs = require('fs');
+const http = require('http');
 const readline = require('readline');
 
 /* defines custom date object with useful methods */ 
@@ -33,31 +34,42 @@ const makeDates = function(start, interval, number){
 	return dates
 }
 
-/* generates array of URLs from array of dates */
-const makeURLs = function (dates){
-	const base = 'https://openexchangerates.org/api/';
+/* generates array of http option objects from array of dates */
+const makeOptions = function (dates){
+	const base = '/api';
 	const id = 'app_id=bdf1519ec8b749ff8d01851d7da1391f';
-
 	return dates.map((date) => {
-		const historical = 'historical/'+ date + '.json';
-		return (base + historical +'?' + id)
+		const query = '/historical/'+ date + '.json';
+		return {
+			protocol: 'http:',
+			hostname: 'openexchangerates.org',
+			path: base + query + '?' + id
+		}
 	})
 }
 
-/* generates array of promises from array of URLS */
-const makePromises = function(urls){
-	return urls.map((url) => {
+/* generates array of promises for http requests from array of
+ *  http options */
+const makePromises = function(options){
+	return options.map((option) => {
 		return new Promise(function (resolve, reject){
-			const req = new XMLHttpRequest();
-			req.open('GET', url, true);
-			console.log(`in handler url is ${req.url}`)
-			req.onload = function (){
-				if(this.status === 200|| this.status === 304){
-					resolve(req)
-				} else {
-					reject(req)}
-			}
-			req.send()
+			const req = http.get(option, (res) =>{
+				res.setEncoding('utf8')
+				let out = {
+					path: res.req.path,
+					data: ''
+				}
+				res.on('data', (chunk) => {
+					out.data += chunk;
+				})
+				res.on('end', () =>{
+					if([200, 302].indexOf(res.statusCode) > -1){
+						resolve(out)
+					} else {
+						reject(out)
+					}
+				})
+			});
 		})
 	})
 }
@@ -66,13 +78,13 @@ const makePromises = function(urls){
 const chainPromises = function(promises){
 	const chain = promises.map((p) => {
 		return p.then(
-			(req) => {
-				console.log(`SUCCESS with ${req.url}`)
-				return req.responseText
+			(out) => {
+				console.log(`SUCCESS with ${out.path}`)
+				return out.data
 			},
-			(req) => {
-				console.log(`FAILURE with ${req.url}`)
-				return `failed with ${req.url}`
+			(out) => {
+				console.log(`FAILURE with ${out.path}`)
+				return `failed with path ${out.path}`
 			})
 	})
 	return Promise.all(chain)
@@ -85,6 +97,7 @@ const writeResults = function(responses, type){
 		const filePath = __dirname + '/usd-historical-failures.json'
 	}
 	const data = responses.join('\n')
+	console.log('should write')
 
 	return new Promise(function(resolve, reject){
 		fs.writeFile(filePath, data, function(err) {
@@ -100,8 +113,8 @@ const writeResults = function(responses, type){
 
 const getData = function (start, interval, number){
 	const dates = makeDates(start, interval, number)
-	const URLs = makeURLs(dates)
-	const promises = makePromises(URLs) 
+	const options = makeOptions(dates)
+	const promises = makePromises(options) 
 	const chain = chainPromises(promises)
 	chain.then((responses) => {
 		successes = []
