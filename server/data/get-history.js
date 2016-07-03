@@ -102,9 +102,9 @@ const writeResults = function(responses, type){
 	return new Promise(function(resolve, reject){
 		fs.writeFile(filePath, data, function(err) {
 			if (err) {
-				console.log(`writing ${type} failed with ${err}`);
+				console.log(`FAILURE saving ${type} to file: ${err}`);
 			} else {
-				console.log(`successfully saved ${type} to file`);
+				console.log(`SUCCESS saving ${type} to file`);
 			}
 			resolve()
 		})
@@ -126,7 +126,9 @@ const getData = function (start, interval, number){
 				successes.push(r)
 			}
 		})
-		failures = ['test']
+		console.log('.......................')
+		console.log('Writing to file........')
+		console.log('.......................')
 		writeResults(failures, 'failures')
 			.then(() => writeResults(successes, 'successes'))
 			.then(() => {console.log('\n'); return process.exit(0)}
@@ -158,11 +160,9 @@ const getParams = function(){
 			return rl.close()
 		}
 	}).on('close', () => {
-		console.log(
-`.......................
-Sending API requests...
-.......................`
-		)
+		console.log('.......................')
+		console.log('Sending API requests...')
+		console.log('.......................')
 		getData(...params)
 	})
 	next()
