@@ -126,13 +126,13 @@ const getParams = function(){
 		output: process.stdout
 	});
 	const prompts = [
-		'Start this many days ago >',
-		'Every this many days >',
-		'This number of times >'
+		'Start this many days ago',
+		'Every this many days',
+		'This number of times'
 	]
 	const params = []
 	const next = () => {
-		rl.setPrompt(prompts[params.length])
+		rl.setPrompt(prompts[params.length]+ ' > ')
 		rl.prompt()
 	}
 	rl.on('line', (l) => {
