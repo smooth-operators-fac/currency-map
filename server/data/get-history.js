@@ -5,7 +5,7 @@
  * interval of dates before running API requests */
 
 const fs = require('fs');
-const rl = require('readline');
+const readline = require('readline');
 
 /* defines custom date object with useful methods */ 
 const MyDate = function (){
@@ -26,7 +26,7 @@ const makeDates = function(start, interval, number){
 	const dates = []
 	const now = new MyDate()
 	const then = now.subtractDays(start)
-	for (let i = 1; i <= n; i++){
+	for (let i = 1; i <= number; i++){
 		let date = then.subtractDays(interval*i).format()
 		dates.push(date)
 	}
