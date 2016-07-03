@@ -91,13 +91,13 @@ const chainPromises = function(promises){
 }
 	/* returns promise to write the array of responses to file */
 const writeResults = function(responses, type){
+	let filePath = __dirname
 	if (type==='successes') {
-		const filePath = __dirname + '/usd-historical.json'
+		filePath += '/usd-historical.json'
 	} else {
-		const filePath = __dirname + '/usd-historical-failures.json'
+		filePath += '/usd-historical-failures.json'
 	}
 	const data = responses.join('\n')
-	console.log('should write')
 
 	return new Promise(function(resolve, reject){
 		fs.writeFile(filePath, data, function(err) {
@@ -126,6 +126,7 @@ const getData = function (start, interval, number){
 				successes.push(r)
 			}
 		})
+		failures = ['test']
 		writeResults(failures, 'failures')
 			.then(() => writeResults(successes, 'successes'))
 			.then(() => {console.log('\n'); return process.exit(0)}
