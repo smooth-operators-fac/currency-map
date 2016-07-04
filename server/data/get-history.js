@@ -46,12 +46,11 @@ const loadFiles = function(){
 /* generates an array of @number dates @interval days apart,
  * counting back from @start */ 
 const makeDates = function(start, interval, number){
-	let dates = []
 	const now = new MyDate()
-	const then = now.subtractDays(start)
-	for (let i = 0; i < number; i++){
-		let date = then.subtractDays(interval*i).format()
-		dates.push(date)
+	const dates = [now.subtractDays(start)]
+	while(number){
+		dates.push(now.subtractDays(interval).format())
+		number--
 	}
 	return dates
 }
@@ -75,23 +74,25 @@ const makeOptions = function (dates){
 const makePromises = function(options){
 	return options.map((option) => {
 		return new Promise(function (resolve, reject){
-			const req = http.get(option, (res) =>{
-				res.setEncoding('utf8')
-				let out = {
-					path: res.req.path,
-					data: ''
-				}
-				res.on('data', (chunk) => {
-					out.data += chunk;
-				})
-				res.on('end', () =>{
-					if([200, 302].indexOf(res.statusCode) > -1){
-						resolve(out)
-					} else {
-						reject(out)
+			setTimeout(()=>{
+				const req = http.get(option, (res) =>{
+					res.setEncoding('utf8')
+					let out = {
+						path: res.req.path,
+						data: ''
 					}
+					res.on('data', (chunk) => {
+						out.data += chunk;
+					})
+					res.on('end', () =>{
+						if([200, 302].indexOf(res.statusCode) > -1){
+							resolve(out)
+						} else {
+							reject(out)
+						}
+					})
 				})
-			});
+			},200)
 		})
 	})
 }
