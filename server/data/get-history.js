@@ -21,13 +21,35 @@ const MyDate = function (){
 	}
 }
 
+/* not currently used */
+const loadFiles = function(){
+		
+	const successes = __dirname + '/usd-historical.json'
+	const failures = __dirname + '/usd-historical-failures.json'
+
+	const file1 = new Promise((resolve, reject) => {
+		fs.readFile(successes, function(err, data){
+			if (err) throw err;
+			resolve(JSON.parse(data))
+		})
+	})
+	const file2 = new Promise((resolve, reject) => {
+		fs.readFile(failures, function(err, data){
+			if (err) throw err;
+			resolve(JSON.parse(data))
+		})
+	})
+
+	return Promise.all([file1, file2])  
+}
+
 /* generates an array of @number dates @interval days apart,
  * counting back from @start */ 
 const makeDates = function(start, interval, number){
 	let dates = []
 	const now = new MyDate()
 	const then = now.subtractDays(start)
-	for (let i = 1; i <= number; i++){
+	for (let i = 0; i < number; i++){
 		let date = then.subtractDays(interval*i).format()
 		dates.push(date)
 	}
@@ -89,15 +111,27 @@ const chainPromises = function(promises){
 	})
 	return Promise.all(chain)
 }
+
+/* removes some unneeded data and returns as JSON */
+const formatResponses = function(responses){
+	const clean = responses.reduce((acc, response)=>{
+		const parsed = JSON.parse(response)
+			acc[parsed.timestamp] = parsed.rates
+			return acc
+	}, {})
+	return JSON.stringify(clean)
+}
+
 	/* returns promise to write the array of responses to file */
 const writeResults = function(responses, type){
+	if (!responses.length) return Promise.resolve()
 	let filePath = __dirname
 	if (type==='successes') {
 		filePath += '/usd-historical.json'
 	} else {
 		filePath += '/usd-historical-failures.json'
 	}
-	const data = responses.join('\n')
+	const data = formatResponses(responses)
 
 	return new Promise(function(resolve, reject){
 		fs.writeFile(filePath, data, function(err) {
@@ -113,6 +147,12 @@ const writeResults = function(responses, type){
 
 const getData = function (start, interval, number){
 	const dates = makeDates(start, interval, number)
+	/*
+	loadFiles().then((arr) => {
+		const successes = arr[0]
+		const failures = arr[1]
+	}) 
+	*/
 	const options = makeOptions(dates)
 	const promises = makePromises(options) 
 	const chain = chainPromises(promises)
@@ -129,10 +169,10 @@ const getData = function (start, interval, number){
 		console.log('.......................')
 		console.log('Writing to file........')
 		console.log('.......................')
+		console.log(failures)
 		writeResults(failures, 'failures')
 			.then(() => writeResults(successes, 'successes'))
-			.then(() => {console.log('\n'); return process.exit(0)}
-			)
+			.then(() => {return process.exit(0)})
 	})
 }
 
