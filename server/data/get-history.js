@@ -9,47 +9,45 @@ const http = require('http');
 const readline = require('readline');
 
 /* defines custom date object with useful methods */ 
-const MyDate = function (){
-	this.date = new Date()
+const MyDate = function (start){
+	this.date = start || new Date()
 	this.subtractDays = function(days){
-		this.date.setTime(this.date.getTime() - days*3600*24*1000)
+		this.date.setUTCTime(this.date.getUTCTime() - days*3600*24*1000)
 		return this
 	},
 	this.format = function(){
 		var addZ =  (n)=>{return n<10? '0'+n:''+n;}
-		return this.date.getFullYear() + '-'+ addZ(this.date.getMonth()+1)+ '-' + addZ(this.date.getDate())	
+		return this.date.getUTCFullYear() + '-'+ addZ(this.date.getUTCMonth()+1)+ '-' + addZ(this.date.getUTCDate())	
 	}
 }
 
-/* not currently used */
-const loadFiles = function(){
-		
-	const successes = __dirname + '/usd-historical.json'
-	const failures = __dirname + '/usd-historical-failures.json'
-
-	const file1 = new Promise((resolve, reject) => {
-		fs.readFile(successes, function(err, data){
+const getPastDates = function(){
+	const filePath = __dirname + '/usd-historical.txt'
+	return new Promise((resolve, reject) => {
+		fs.readFile(filePath, 'utf-8', function(err, data){
 			if (err) throw err;
-			resolve(JSON.parse(data))
+			const out = {}
+			data.split('\n').forEach((line)=>{
+				if (line) out[Object.keys(JSON.parse(line))[0]] = null
+			})
+			resolve(out)
 		})
 	})
-	const file2 = new Promise((resolve, reject) => {
-		fs.readFile(failures, function(err, data){
-			if (err) throw err;
-			resolve(JSON.parse(data))
-		})
-	})
-
-	return Promise.all([file1, file2])  
 }
 
 /* generates an array of @number dates @interval days apart,
  * counting back from @start */ 
-const makeDates = function(start, interval, number){
+const makeDates = function(number, pastDates){
+	const start = 0
+	const interval = 1
 	const now = new MyDate()
-	const dates = [now.subtractDays(start)]
+			console.log(now.subtractDays(start), 'out')
+	let date = now.subtractDays(start).format()
 	while(number){
-		dates.push(now.subtractDays(interval).format())
+		if (!pastDates.hasOwnProperty(date)){
+			dates.push(date)
+		}
+		date = now.subtractDays(interval).format()
 		number--
 	}
 	return dates
@@ -107,7 +105,6 @@ const chainPromises = function(promises){
 			},
 			(out) => {
 				console.log(`FAILURE with ${out.path}`)
-				return `failed with path ${out.path}`
 			})
 	})
 	return Promise.all(chain)
@@ -115,65 +112,48 @@ const chainPromises = function(promises){
 
 /* removes some unneeded data and returns as JSON */
 const formatResponses = function(responses){
-	const clean = responses.reduce((acc, response)=>{
+	const lines = responses.map((response)=>{
 		const parsed = JSON.parse(response)
-			acc[parsed.timestamp] = parsed.rates
-			return acc
-	}, {})
-	return JSON.stringify(clean)
+		const date = new MyDate(new Date(parsed.timestamp*1000))
+		const temp = {}
+		temp[date.format()] = parsed.rates
+		return JSON.stringify(temp)
+	})
+	lines.push('')
+	return lines.join('\n')
 }
 
 	/* returns promise to write the array of responses to file */
-const writeResults = function(responses, type){
-	if (!responses.length) return Promise.resolve()
-	let filePath = __dirname
-	if (type==='successes') {
-		filePath += '/usd-historical.json'
-	} else {
-		filePath += '/usd-historical-failures.json'
-	}
+const writeResults = function(responses){
+	if (!responses.length) return Promise.reject()
+	const filePath = '/usd-historical.txt'
 	const data = formatResponses(responses)
-
 	return new Promise(function(resolve, reject){
-		fs.writeFile(filePath, data, function(err) {
+		fs.appendFile(filePath, data, function(err) {
 			if (err) {
-				console.log(`FAILURE saving ${type} to file: ${err}`);
+				console.log(`FAILURE saving to file: ${err}`);
 			} else {
-				console.log(`SUCCESS saving ${type} to file`);
+				console.log(`SUCCESS saving to file`);
 			}
 			resolve()
 		})
 	})
 }
 
-const getData = function (start, interval, number){
-	const dates = makeDates(start, interval, number)
-	/*
-	loadFiles().then((arr) => {
-		const successes = arr[0]
-		const failures = arr[1]
-	}) 
-	*/
-	const options = makeOptions(dates)
-	const promises = makePromises(options) 
-	const chain = chainPromises(promises)
-	chain.then((responses) => {
-		successes = []
-		failures = []
-		responses.forEach((r) => {
-			if (r.slice(0,6)==='failed'){
-				failures.push(r)
-			} else {
-				successes.push(r)
-			}
-		})
-		console.log('.......................')
+const getData = function (number){
+	getPastDates().then((pastDates) => {
+		const dates = makeDates(number, pastDates)
+		return Promise.resolve(dates)
+	}).then((dates)=>{
+		const options = makeOptions(dates)
+		const promises = makePromises(options) 
+		return chainPromises(promises)
+	}).then((responses) => {
 		console.log('Writing to file........')
-		console.log('.......................')
-		console.log(failures)
-		writeResults(failures, 'failures')
-			.then(() => writeResults(successes, 'successes'))
-			.then(() => {return process.exit(0)})
+		writeResults(responses).then(() => {
+			return process.exit(0)
+		})
+
 	})
 }
 
@@ -184,9 +164,7 @@ const getParams = function(){
 		output: process.stdout
 	});
 	const prompts = [
-		'Start this many days ago',
-		'Every this many days',
-		'This number of times'
+		'Number of calls'
 	]
 	const params = []
 	const next = () => {
@@ -201,9 +179,7 @@ const getParams = function(){
 			return rl.close()
 		}
 	}).on('close', () => {
-		console.log('.......................')
 		console.log('Sending API requests...')
-		console.log('.......................')
 		getData(...params)
 	})
 	next()
