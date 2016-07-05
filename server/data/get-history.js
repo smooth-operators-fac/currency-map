@@ -12,7 +12,7 @@ const readline = require('readline');
 const MyDate = function (start){
 	this.date = start || new Date()
 	this.subtractDays = function(days){
-		this.date.setUTCTime(this.date.getUTCTime() - days*3600*24*1000)
+		this.date.setTime(this.date.getTime() - days*3600*24*1000)
 		return this
 	},
 	this.format = function(){
@@ -41,14 +41,15 @@ const makeDates = function(number, pastDates){
 	const start = 0
 	const interval = 1
 	const now = new MyDate()
-			console.log(now.subtractDays(start), 'out')
 	let date = now.subtractDays(start).format()
+	const dates = []
+	console.log('some problem here', date)
 	while(number){
 		if (!pastDates.hasOwnProperty(date)){
 			dates.push(date)
+			number--
 		}
 		date = now.subtractDays(interval).format()
-		number--
 	}
 	return dates
 }
@@ -126,7 +127,7 @@ const formatResponses = function(responses){
 	/* returns promise to write the array of responses to file */
 const writeResults = function(responses){
 	if (!responses.length) return Promise.reject()
-	const filePath = '/usd-historical.txt'
+	const filePath = __dirname + '/usd-historical.txt'
 	const data = formatResponses(responses)
 	return new Promise(function(resolve, reject){
 		fs.appendFile(filePath, data, function(err) {
@@ -143,8 +144,6 @@ const writeResults = function(responses){
 const getData = function (number){
 	getPastDates().then((pastDates) => {
 		const dates = makeDates(number, pastDates)
-		return Promise.resolve(dates)
-	}).then((dates)=>{
 		const options = makeOptions(dates)
 		const promises = makePromises(options) 
 		return chainPromises(promises)
@@ -153,7 +152,6 @@ const getData = function (number){
 		writeResults(responses).then(() => {
 			return process.exit(0)
 		})
-
 	})
 }
 
