@@ -1,0 +1,26 @@
+{
+  "name": "currency-map",
+  "version": "1.0.0",
+  "description": "visualise exchange rate fluctuations",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/backend/server-test.js",
+    "start": "nodemon server/server.js"
+  },
+  "keywords": [],
+  "author": "Mattia Spinelli, Sam Galson, Bradley Reeder, Jakub Svihla",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smooth-operators/currency-map.git"
+  },
+  "homepage": "https://github.com/smooth-operators/currency-map.git",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint-config-airbnb": "^9.0.1",
+    "eslint-plugin-react": "^5.2.2",
+    "istanbul": "^0.4.4",
+    "nodemon": "^1.9.2",
+    "shot": "^3.1.0",
+    "tape": "^4.6.0"
+  }
+}
