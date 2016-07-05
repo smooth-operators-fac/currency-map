@@ -43,7 +43,6 @@ const makeDates = function(number, pastDates){
 	const now = new MyDate()
 	let date = now.subtractDays(start).format()
 	const dates = []
-	console.log('some problem here', date)
 	while(number){
 		if (!pastDates.hasOwnProperty(date)){
 			dates.push(date)
