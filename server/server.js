@@ -4,7 +4,7 @@ const handler = require('../server/handler.js');
 
 const server = http.createServer(handler);
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 4001;
 
 map.make(() => {
   server.listen(port);

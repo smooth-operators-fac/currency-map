@@ -4,54 +4,65 @@ const jsdom = require('jsdom');
 const topojson = require('topojson');
 
 function make(callback) {
-  const width = 960;
-  const height = 1160;
+  function buildSVG(domErr, window) {
+    if (domErr) throw domErr;
+    const width = 960;
+    const height = 1160;
+    const w = window;
+    w.d3 = d3.select(w.document);
 
-  function buildSVG(map) {
-    const svg = window.d3.select('body')
-      .append('div').attr('class', 'container')
-      .append('svg')
-      .attr({
-        xmlns: 'http://www.w3.org/2000/svg',
-        width,
-        height,
-      })
-      .append('g')
-      .attr('transform', `translate(${width / 2}, ${width / 2})`);
-    const subunits = topojson.feature(map, map.objects.subunits);
-    const projection = d3.geo.mercator()
-      .scale(500)
-      .translate([width / 2, height / 2]);
-    const path = d3.geo.path()
-      .projection(projection);
+    function write() {
+      const path = `${__dirname}/../public/assets/map.svg`;
+      const data = w.d3.select('div').html();
+      fs.writeFile(path, data, (fileErr) => {
+        if (fileErr) throw fileErr;
+        callback();
+      });
+    }
 
-    svg.append('path')
-      .datum(subunits)
-      .attr('d', path);
+    function makeMap(map, svg) {
+      const admin = topojson.feature(map, map.objects.admin);
+      const projection = d3.geoMercator()
+        .scale(500)
+        .translate([width / 2, height / 2]);
+      const path = d3.geoPath()
+        .projection(projection);
 
-    fs.writeFile('map.svg', window.d3.select('.container').html(), (err) => {
-      if (err) throw err;
-      callback();
-    });
+      svg.append('path')
+        .datum(admin)
+        .attr('d', path);
+
+      write();
+    }
+
+    function readData() {
+      fs.readFile(`${__dirname}/data/map.json`, (loadErr, data) => {
+        const mapData = JSON.parse(data);
+        if (loadErr) throw loadErr;
+        const svg = w.d3.select('body')
+          .append('div')
+          .append('svg');
+        svg.attr({
+          xmlns: 'http://www.w3.org/2000/svg',
+          width,
+          height,
+        });
+        svg.append('g')
+          .attr('transform', `translate(${width / 2}, ${height / 2})`);
+        makeMap(mapData, svg);
+      });
+    }
+
+    readData();
   }
 
-  function inject() {
-    d3.json(`${__dirname}/data/map.json`, (err, map) => {
-      if (err) throw err;
-      buildSVG(map);
-    });
-  }
-
-  function createHTML() {
-    jsdom.env({
-      html: '',
-      features: { QuerySelector: true },
-      done: inject,
-    });
-  }
-
-  createHTML();
+  jsdom.env({
+    html: '<html><body></body></html>',
+    features: { QuerySelector: true },
+    done: buildSVG,
+  });
 }
+
 
 module.exports = {
   make,
