@@ -1,7 +1,7 @@
 const paths = require('../server/paths.js');
 
 function handler(request, response) {
-  const url = request.url;//
+  const url = request.url;
   if (url === '/') {
     paths.index(request, response);
   } else if (url.includes('/public')) {
